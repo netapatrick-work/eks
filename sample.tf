@@ -78,4 +78,9 @@ module "eks" {
       desired_size = 2
     }
   }
+
+  cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+
+  cloudwatch_log_group_retention_in_days = 7
+  cloudwatch_log_group_name             = "/aws/eks/my-eks-cluster/cluster"
 }
