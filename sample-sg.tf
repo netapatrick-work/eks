@@ -71,3 +71,20 @@ module "eks" {
     }
   }
 }
+
+
+# Cluster Ingress Security Group
+output "worker_security_group_id" {
+  description = "Security group ID attached to the EKS workers."
+  value       = module.eks.worker_security_group_id
+}
+
+resource "aws_security_group_rule" "cluster_ingress_worker_node_security_group" {
+  description              = "Allow worker nodes to communicate with the EKS cluster API."
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+  security_group_id        = module.eks.cluster_security_group_id
+  source_security_group_id = module.eks.worker_security_group_id
+  type                     = "ingress"
+}
