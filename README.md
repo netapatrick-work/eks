@@ -1,4 +1,4 @@
-# VPC via Module
+# Private EKS using AWS Blueprints
 
 ## Reference
 AWS EKS Blueprint 
