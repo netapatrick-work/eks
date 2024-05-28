@@ -4,12 +4,16 @@ provider "aws" {
 
 data "aws_availability_zones" "available" {}
 
+data "aws_vpc" "selected" {
+  id = var.vpc_id
+}
+
 locals {
   name   = "gh-arc"
   region = "us-east-1"
 
-  vpc_cidr = "10.0.0.0/16"
-  azs      = slice(data.aws_availability_zones.available.names, 0, 3)
+  # vpc_cidr = "10.0.0.0/16"
+  # azs      = slice(data.aws_availability_zones.available.names, 0, 3)
 
   tags = {
     Blueprint  = local.name
@@ -41,8 +45,8 @@ module "eks" {
     vpc-cni    = {}
   }
 
-  vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnets
+  vpc_id     = var.vpc_id
+  subnet_ids = var.private_subnet_ids
 
   eks_managed_node_groups = {
     initial = {
@@ -61,26 +65,26 @@ module "eks" {
 # Supporting Resources
 ################################################################################
 
-module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "~> 5.0"
+# module "vpc" {
+#   source  = "terraform-aws-modules/vpc/aws"
+#   version = "~> 5.0"
 
-  # manage_default_vpc = true
+#   # manage_default_vpc = true
 
-  name = local.name
-  cidr = local.vpc_cidr
+#   name = local.name
+#   cidr = local.vpc_cidr
 
-  azs             = local.azs
-  private_subnets = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 4, k)]
+#   azs             = local.azs
+#   private_subnets = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 4, k)]
 
-  enable_nat_gateway = false
+#   enable_nat_gateway = false
 
-  private_subnet_tags = {
-    "kubernetes.io/role/internal-elb" = 1
-  }
+#   private_subnet_tags = {
+#     "kubernetes.io/role/internal-elb" = 1
+#   }
 
-  tags = local.tags
-}
+#   tags = local.tags
+# }
 
 module "vpc_endpoints" {
   source  = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
@@ -95,7 +99,7 @@ module "vpc_endpoints" {
   security_group_rules = {
     ingress_https = {
       description = "HTTPS from VPC"
-      cidr_blocks = [module.vpc.vpc_cidr_block]
+      cidr_blocks = data.aws_vpc.selected.cidr_block
     }
   }
 
@@ -103,7 +107,7 @@ module "vpc_endpoints" {
     s3 = {
       service         = "s3"
       service_type    = "Gateway"
-      route_table_ids = module.vpc.private_route_table_ids
+      route_table_ids = data.aws_vpc.selected.main_route_table_id #module.vpc.private_route_table_ids
       tags = {
         Name = "${local.name}-s3"
       }
@@ -113,7 +117,7 @@ module "vpc_endpoints" {
       replace(service, ".", "_") =>
       {
         service             = service
-        subnet_ids          = module.vpc.private_subnets
+        subnet_ids          = var.private_subnet_ids #module.vpc.private_subnets
         private_dns_enabled = true
         tags                = { Name = "${local.name}-${service}" }
       }
