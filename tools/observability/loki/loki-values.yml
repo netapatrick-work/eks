@@ -1,0 +1,52 @@
+# Ref :https://medium.com/techlogs/grafana-loki-with-aws-s3-backend-through-irsa-in-aws-kubernetes-cluster-93577dc482a
+loki:
+  auth_enabled: false
+  commonConfig:
+    path_prefix: /var/loki
+    replication_factor: 1
+  compactor:
+    apply_retention_interval: 1h
+    compaction_interval: 5m
+    retention_delete_worker_count: 500
+    retention_enabled: true
+    shared_store: s3
+    working_directory: /data/compactor
+  config:  
+      schema_config:
+        configs:
+        - from: 2020-05-15
+          store: boltdb-shipper
+          object_store: s3
+          schema: v11
+          index:
+            period: 24h
+            prefix: loki_index_
+        
+      storage_config:
+        aws:
+          region: us-east-1
+          bucketnames: your-bucket-name
+          s3forcepathstyle: false
+          #s3forcepathstyle: true  <-- This is the main culprit; comment it out ? -? https://github.com/grafana/loki/issues/7024
+        boltdb_shipper:
+          shared_store: s3
+          cache_ttl: 24h
+  serviceAccount:
+    create: true
+    name: loki-sa
+    annotations:
+       eks.amazonaws.com/role-arn: "your-role-arn"
+  write:
+     replicas: 2
+  read:
+    replicas: 1
+
+grafana:
+    enabled: true
+    sidecar:
+      datasources:
+        enabled: true
+    image:
+      tag:  7.5.17 # <--there is a bug in grafana https://github.com/grafana/loki/issues/8136
+      users:
+        default_theme: dark
