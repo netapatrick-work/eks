@@ -66,10 +66,12 @@ module "eks" {
   cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
   cloudwatch_log_group_retention_in_days = 7
 
+  #TODO: Added ebs-csi driver - pending testing
   cluster_addons = {
     coredns    = {}
     kube-proxy = {}
     vpc-cni    = {}
+    aws-ebs-csi-driver = {}
   }
 
   vpc_id     = module.vpc.vpc_id
