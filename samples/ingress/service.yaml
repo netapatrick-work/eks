@@ -1,0 +1,13 @@
+# apps-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: apps-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: app1
+    app: app2
