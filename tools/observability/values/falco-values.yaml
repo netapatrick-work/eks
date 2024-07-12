@@ -1,0 +1,39 @@
+  falco:
+    json_output: "true"
+  customRules:
+    cdc-rules.yaml: |-
+      - rule: Run shell as root in container
+        desc: Detect when a shell is run by root in a container
+        condition: spawned_process and user.name = root and container and shell_procs
+        output: "Shell run by root user in container (user=%user.name container=%container.name command=%proc.cmdline)"
+        priority: WARNING
+
+      - rule: Run shell as non-root user with sudo in container
+        desc: Detect when a shell is run by a non-root user with sudo in a container
+        condition: spawned_process and user.name != root and proc.name = sudo and container and shell_procs
+        output: "Shell run by non-root user with sudo in container (user=%user.name container=%container.name command=%proc.cmdline)"
+        priority: WARNING
+
+      - rule: Run nsenter in container
+        desc: Detect when the nsenter command is run in a container
+        condition: spawned_process and proc.name = nsenter and container
+        output: "nsenter command was run in container (user=%user.name container=%container.name command=%proc.cmdline)"
+        priority: WARNING
+
+      - rule: Detect rm command in container
+        desc: Detect when the rm command is used in a container
+        condition: spawned_process and proc.name = rm and container
+        output: "rm command was used in container (user=%user.name container=%container.name command=%proc.cmdline)"
+        priority: WARNING
+
+      - rule: Detect chmod command in container
+        desc: Detect when the chmod command is used in a container
+        condition: spawned_process and proc.name = chmod and container
+        output: "chmod command was used in container (user=%user.name container=%container.name command=%proc.cmdline)"
+        priority: WARNING
+
+      - rule: Detect history command in container
+        desc: Detect when the history command is used in a container
+        condition: spawned_process and proc.name = history and container
+        output: "history command was used in container (user=%user.name container=%container.name command=%proc.cmdline)"
+        priority: WARNING

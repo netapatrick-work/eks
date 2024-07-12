@@ -1,0 +1,13 @@
+alertManager:
+  enabled: false
+
+grafana:
+  enabled: true
+
+kubeEtcd:
+  enabled: false
+
+nodeExporter:
+  enabled: false
+
+namespaceOverride: cdc-kube-prometheus-stack
