@@ -1,0 +1,8 @@
+# helm install istio-cni istio/cni -n istio-system --set profile=ambient -f istio-cni-values.yaml --wait
+
+profile: ambient
+
+# defaults:
+#   cni:
+#     cniNetnsDir: "/var/run/docker/netns"
+
