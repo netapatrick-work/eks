@@ -12,8 +12,15 @@ locals {
   oidc_issuer_url = replace(data.aws_eks_cluster.cluster.identity[0].oidc[0].issuer, "https://", "")
 }
 
+resource "random_string" "postfix" {
+  length  = 5
+  special = false
+  upper   = false
+}
+
 resource "aws_s3_bucket" "loki_bucket" {
-  bucket = "loki-xi1f34"
+  #bucket = "loki-xi1f34"
+  bucket = "loki-${random_string.postfix.result}"
   acl    = "private"
 
   versioning {
